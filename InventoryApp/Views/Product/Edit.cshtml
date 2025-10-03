@@ -1,0 +1,84 @@
+﻿@model InventoryApp.ViewModel.ProductViewModel
+@{
+    ViewData["Title"] = "Edit Product";
+}
+<div class="container mt-4">
+    <h2> Edit Product</h2>
+    <form asp-action="Edit" method="post" enctype="multipart/form-data" >
+        <input type="hidden" asp-for="Id" />
+        <div class="card">
+            <div class=" card-body">
+
+                <div class="mb-3">
+                    <label asp-for="SKU" class="form-label"></label>
+                    <input asp-for="SKU" class="form-control" />
+                    <span asp-validation-for="SKU" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="PurchasePrice" class="form-label"></label>
+
+                    <input asp-for="PurchasePrice" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="PurchasePrice" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="SalePrice" class="form-label"></label>
+                    <input asp-for="SalePrice" class="form-control" type="number" step="0.01" />
+                    <span asp-validation-for="SalePrice" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Unit" class="form-label"></label>
+                    <select asp-for="Unit" class="form-select" asp-items="Html.GetEnumSelectList<Core.Entities.UnitType>()"></select>
+                    <span asp-validation-for="Unit" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Current Image</label>
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                     <div>
+                            <img src="@Model.ImageUrl" alt="Product Image" style="max-height:180px; border-radius:8px;" />
+                     </div>   
+                    }
+                    else
+                    {
+                        <div>
+                            <span>No image available</span>
+                        </div>
+                    }
+                </div>
+                <div class="mb-3">
+                    <label asp-for="ImageUrl" class="form-label"></label>
+                    <input asp-for="ImageUrl" class="form-control" type="file" />
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+
+                </div>
+                <div class="mb-3">
+                    <label asp-for="CategoryId" class="form-label"></label>
+                    <select asp-for="CategoryId" class="form-select" asp-items="Model.CategoryList">
+                        <option value="">-- Select Category --</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+
+                </div>
+                <div class="mb-3 from-check">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

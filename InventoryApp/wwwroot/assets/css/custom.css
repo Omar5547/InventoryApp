@@ -1,0 +1,8 @@
+﻿.wrapper,
+.content-wrapper,
+.page-wrapper,
+.main-header,
+.main-footer {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}

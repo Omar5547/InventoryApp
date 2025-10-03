@@ -1,0 +1,154 @@
+﻿@model InventoryApp.ViewModel.SalesOrderViewModel
+@{
+    ViewData["Title"] = "Create Sales Order";
+}
+
+<div class="container">
+    <h2>Create Sales Order</h2>
+
+    <form asp-action="Create" method="post">
+        <div class="form-group">
+            <label>Customer</label>
+            <select name="CustomerId" class="form-control" required>
+                <option value="">Select Customer</option>
+                @foreach (var customer in Model.CustomerList)
+                {
+                    <option value="@customer.Value">@customer.Text</option>
+                   
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Order Date</label>
+            <input type="date" name="OrderDate" class="form-control" value="@Model.OrderDate.ToString("yyyy-MM-dd")" required />
+        </div>
+
+        <div class="form-group">
+            <label>Discount</label>
+            <input type="number" name="Discount" class="form-control" value="0" step="0.01" />
+        </div>
+
+        <div class="form-group">
+            <label>Currency</label>
+            <input type="text" name="Currency" class="form-control" value="USD" />
+        </div>
+
+        <h5>Order Items</h5>
+        <table class="table table-bordered" id="orderItemsTable">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Discount</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- الصفوف تُضاف هنا ديناميكياً -->
+            </tbody>
+        </table>
+
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <label>Select Product:</label>
+                <select id="productSelect" class="form-control">
+                    <option value="">Select Product</option>
+                    @foreach (var product in Model.ProductList)
+                    {
+                        <option value="@product.Id" data-name="@product.Name" data-price="@product.SalePrice">@product.Name - @product.SalePrice</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label>Quantity:</label>
+                <input type="number" id="quantityInput" class="form-control" value="1" min="1" />
+            </div>
+            <div class="col-md-2">
+                <label>Unit Price:</label>
+                <input type="number" id="unitPriceInput" class="form-control" value="0" step="0.01" />
+            </div>
+            <div class="col-md-2">
+                <label>Discount:</label>
+                <input type="number" id="discountInput" class="form-control" value="0" step="0.01" />
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-primary mt-4" onclick="addOrderItem()">Add Item</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-4">Save Order</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let orderItemsIndex = 0;
+
+        function addOrderItem() {
+            var productSelect = document.getElementById('productSelect');
+            var productId = productSelect.value;
+            var productName = productSelect.options[productSelect.selectedIndex].getAttribute('data-name');
+            var quantity = document.getElementById('quantityInput').value;
+            var unitPrice = document.getElementById('unitPriceInput').value;
+            var discount = document.getElementById('discountInput').value;
+
+            if (!productId || quantity <= 0) {
+                alert("Please select product and enter quantity.");
+                return;
+            }
+
+            var total = (quantity * unitPrice) - discount;
+
+            var tbody = document.querySelector('#orderItemsTable tbody');
+            var row = `
+                <tr>
+                    <td>
+                        <input type="hidden" name="OrderItems[${orderItemsIndex}].ProductId" value="${productId}" />
+                        <input type="hidden" name="OrderItems[${orderItemsIndex}].ProductName" value="${productName}" />
+                        ${productName}
+                    </td>
+                    <td>
+                        <input type="hidden" name="OrderItems[${orderItemsIndex}].Quantity" value="${quantity}" />
+                        ${quantity}
+                    </td>
+                    <td>
+                        <input type="hidden" name="OrderItems[${orderItemsIndex}].UnitPrice" value="${unitPrice}" />
+                        ${unitPrice}
+                    </td>
+                    <td>
+                        <input type="hidden" name="OrderItems[${orderItemsIndex}].Discount" value="${discount}" />
+                        ${discount}
+                    </td>
+                    <td>
+                        <input type="hidden" name="OrderItems[${orderItemsIndex}].Total" value="${total}" />
+                        ${total}
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="removeOrderItem(this)">Remove</button>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+            orderItemsIndex++;
+
+            // Clear fields
+            document.getElementById('quantityInput').value = 1;
+            document.getElementById('unitPriceInput').value = 0;
+            document.getElementById('discountInput').value = 0;
+        }
+
+        function removeOrderItem(button) {
+            button.closest('tr').remove();
+        }
+
+        // Update price when product is selected
+        document.getElementById('productSelect').addEventListener('change', function() {
+            var selectedOption = this.options[this.selectedIndex];
+            var price = selectedOption.getAttribute('data-price') || 0;
+            document.getElementById('unitPriceInput').value = price;
+        });
+    </script>
+}

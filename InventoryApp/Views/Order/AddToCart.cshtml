@@ -1,0 +1,31 @@
+﻿@model InventoryApp.ViewModel.AddToCartViewModel
+@{
+    if (Model == null)
+    {
+        <div class="alert alert-danger">Product not found.</div>
+        return;
+    }
+    }
+<h2 class="card mb-3">Confirm Add to Cart</h2>
+<div class="card mb-3">
+    <div class="card-body">
+        <p class="mb-1"><strong>Product ID:</strong>@Model.ProductId</p>
+        <p class="mb-3"><strong>Quantity:</strong> @Model.Quantity</p>
+        <form asp-controller="Order" asp-action="AddToCart" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ProductId" />
+            <input type="hidden" asp-for="Quantity" />
+            <input type="hidden" asp-for="ReturnUrl" />
+            <button type="submit" class="btn btn-success">Confirm</button>
+            @if(!string.IsNullOrEmpty(Model.ReturnUrl)&& Url.IsLocalUrl(Model.ReturnUrl))
+            {
+                <a class="btn btn-secondary ms-2" href="@Model.ReturnUrl">Cancel</a>
+            }
+            else
+            {
+                <a class="btn btn-secondary ms-2"asp-controller="Home" asp-action="Index">Cancel</a>
+            }
+
+        </form>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+﻿@model InventoryApp.ViewModel.ProductViewModel
+@{
+    ViewData["Title"] = "Product Details";
+}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Product Details</h2>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </div>
+    </div>
+
+<div class="card">
+        <div class="card-body">
+    <dl class="row">
+        <dt class="col-sm-3">SKU</dt>
+        <dd class="col-sm-9">@Model.SKU</dd>
+        <dt class="col-sm-3">Name</dt>
+        <dd class="col-sm-9">@Model.Name</dd>
+        <dt class="col-sm-3">Purchase Price</dt>
+        <dd class="col-sm-9">@Model.PurchasePrice.ToString("C")</dd>
+        <dt class="col-sm-3">Sale Price</dt>
+        <dd class="col-sm-9">@Model.SalePrice.ToString("C")</dd>
+        <dt class="col-sm-3">Unit</dt>
+        <dd class="col-sm-9">@Model.Unit</dd>
+
+        <dt class="col-sm-3">Category</dt>
+        <dd class="col-sm-9">@Model.CategoryName</dd>
+
+        <dt class="col-sm-3">Image</dt>
+        <dd class="col-sm-9">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                    
+                        <img src="@Model.ImageUrl" alt="Product Image" style="max-height:180px; border-radius:8px;" />
+                    
+                }
+                    else
+                    {
+                        <span>No image available</span>
+                    }
+
+        </dd>
+
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success">Active</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Inactive</span>
+                    }
+        </dd>
+
+        <dt class="col-sm-3">Created At</dt>
+        <dd class="col-sm-9">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+
+        <dt class="col-sm-3">Updated At</dt>
+                <dd class="col-sm-9">@Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</dd>
+    
+    </dl>
+    
+</div>
+</div>
+</div>

@@ -1,0 +1,29 @@
+﻿@using Core.Entities
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    <li >
+        <a asp-controller ="Account" asp-action="Login">Hello @User.Identity?.Name!</a>
+    </li>
+    <li>
+        <a  href="/Home/order" >الطلبات</a>
+    </li>
+    <li >
+        <form class="form-inline" asp-controller="Account"asp-action="Logout"  asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
+        </form>
+    </li>
+}
+else
+{
+    <li >
+        <a  asp-controller="Account" asp-action="Register">تسجيل مستخدم </a>
+    </li>
+    <li>
+        <a asp-controller="Account" asp-action="Login">الدخول</a>
+    </li>
+}
+

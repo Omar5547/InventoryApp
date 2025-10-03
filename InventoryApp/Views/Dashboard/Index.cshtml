@@ -1,0 +1,165 @@
+﻿@model InventoryApp.ViewModel.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Orders -->
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Orders</h5>
+                            <h3>@Model.OrdersCount</h3>
+                        </div>
+                        <i class="fas fa-shopping-cart fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products -->
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Products</h5>
+                            <h3>@Model.ProductsCount</h3>
+                        </div>
+                        <i class="fas fa-boxes fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customers -->
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Customers</h5>
+                            <h3>@Model.CustomersCount</h3>
+                        </div>
+                        <i class="fas fa-users fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suppliers -->
+        <div class="col-md-3">
+            <div class="card text-white bg-danger">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Suppliers</h5>
+                            <h3>@Model.SuppliersCount</h3>
+                        </div>
+                        <i class="fas fa-truck fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Monthly Sales</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">Recent Orders</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>ORD-001</td>
+                                <td>John Doe</td>
+                                <td>2025-08-01</td>
+                                <td>$120.00</td>
+                                <td><span class="badge badge-success">Completed</span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>ORD-002</td>
+                                <td>Jane Smith</td>
+                                <td>2025-08-03</td>
+                                <td>$80.00</td>
+                                <td><span class="badge badge-warning">Pending</span></td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>ORD-003</td>
+                                <td>Ali Ahmed</td>
+                                <td>2025-08-05</td>
+                                <td>$150.00</td>
+                                <td><span class="badge badge-danger">Cancelled</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var ctx = document.getElementById('salesChart').getContext('2d');
+        var chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Sales',
+                    backgroundColor: 'rgba(60,141,188,0.5)',
+                    borderColor: 'rgba(60,141,188,1)',
+                    borderWidth: 2,
+                    data: @Html.Raw(Json.Serialize(Model.MonthlySales)),
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}
