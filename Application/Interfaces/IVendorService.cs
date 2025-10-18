@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface IVendorService
     {
-        Task<IReadOnlyList<VendorDto>> GetAllAsync(string? search=null);
+        Task<IEnumerable<VendorDto>> GetAllAsync(string? search=null);
         Task<VendorDto?> GetByIdAsync(int id);
         Task <int> AddAsync(VendorDto vendorDto);
         Task UpdateAsync(VendorDto vendorDto);

@@ -15,6 +15,6 @@ namespace Application.DTO
         public string Currency {  get; set; } = string.Empty;
         public OrderStatus Status {  get; set; }
         public decimal Discount { get; set; }
-        public decimal NonVendorCosts { get; set; }
+        public decimal Total { get; set; }
     }
 }

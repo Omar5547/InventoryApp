@@ -1,0 +1,149 @@
+﻿@model PurchaseOrderViewModel
+@{
+    ViewData["Title"] = "Create Purchase Order";
+}
+<div class="container">
+    <h2>Create Purchase Order</h2>
+
+    <form id="poCreateForm" method="post" onsubmit="return false;">
+        
+
+     
+        <div class="form-group">
+            <label>Vendor</label>
+            <select name="VendorId" id="poVendor" class="form-control" required>
+                <option value="">Select Vendor</option>
+                @foreach (var v in Model.VendorList)
+                {
+                    <option value="@v.Value">@v.Text</option>
+                }
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Order Date</label>
+            <input type="date" name="OrderDate" id="poDate" class="form-control"
+                   value="@Model.OrderDate.ToString("yyyy-MM-dd")" required />
+        </div>
+
+        <div class="form-group">
+            <label>Currency</label>
+            <input type="text" name="Currency" id="poCurr" class="form-control" value="@Model.Currency" />
+        </div>
+
+     
+        <h5 class="mt-4">Add Item</h5>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <label>Select Product</label>
+                <select id="poProd" class="form-control">
+                    <option value="">Select</option>
+                    @foreach (var p in Model.ProductList)
+                    {
+                        <option value="@p.Id" data-name="@p.Name" data-price="@p.SalePrice">@p.Name - @p.SalePrice</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label>Qty</label>
+                <input id="poQty" type="number" class="form-control" value="1" min="1">
+            </div>
+            <div class="col-md-2">
+                <label>Unit Price</label>
+                <input id="poPrice" type="number" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="col-md-2">
+                <label>Discount %</label>
+                <input id="poDisc" type="number" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="col-md-2">
+                <label>Tax %</label>
+                <input id="poTax" type="number" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="button" id="poAdd" class="btn btn-primary w-100">Add</button>
+             </div>
+        </div>
+
+       
+        <h5 class="mt-4">Items</h5>
+        <table class="table table-bordered" id="poTable">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Unit</th>
+                    <th>Disc%</th>
+                    <th>Tax%</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+                </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+        <div id="poHidden"></div>
+
+        <div class="mt-3">
+            <button type="button" id="poSave" class="btn btn-success">Save PO</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "PurchaseOrder")">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        let poItems=[]; const calc=o=>o.qty*o.unitPrice*(1-o.discount/100)*(1+o.tax/100);
+
+        function render(){ const tb=$('#poTable tbody'); tb.empty();
+          poItems.forEach((x,i)=>tb.append(
+            `<tr>
+              <td>${x.productName}</td>
+              <td>${x.qty.toFixed(3)}</td>
+              <td>${x.unitPrice.toFixed(2)}</td>
+              <td>${x.discount.toFixed(2)}%</td>
+              <td>${x.tax.toFixed(2)}%</td>
+              <td>${calc(x).toFixed(2)}</td>
+              <td><button class="btn btn-danger btn-sm" type="button" onclick="delItem(${i})">Remove</button></td>
+            </tr>`
+          ));
+          rebuildHidden();
+        }
+        function rebuildHidden(){ const h=$('#poHidden'); h.empty();
+          poItems.forEach((x,i)=>{
+            $('<input>',{type:'hidden',name:`Items[${i}].ProductId`,value:x.productId}).appendTo(h);
+            $('<input>',{type:'hidden',name:`Items[${i}].ProductName`,value:x.productName}).appendTo(h);
+            $('<input>',{type:'hidden',name:`Items[${i}].Qty`,value:x.qty}).appendTo(h);
+            $('<input>',{type:'hidden',name:`Items[${i}].UnitPrice`,value:x.unitPrice}).appendTo(h);
+            $('<input>',{type:'hidden',name:`Items[${i}].Discount`,value:x.discount}).appendTo(h);
+            $('<input>',{type:'hidden',name:`Items[${i}].Tax`,value:x.tax}).appendTo(h);
+            $('<input>',{type:'hidden',name:`Items[${i}].Total`,value:calc(x).toFixed(2)}).appendTo(h);
+          });
+        }
+        $('#poProd').on('change',function(){ const price=Number(this.options[this.selectedIndex]?.getAttribute('data-price')||0); $('#poPrice').val(price); });
+        $('#poAdd').on('click',function(){
+          const sel=document.getElementById('poProd');
+          const id=Number($('#poProd').val()); const name=sel.options[sel.selectedIndex]?.getAttribute('data-name')||'';
+          const qty=Number($('#poQty').val()||0), unit=Number($('#poPrice').val()||0);
+          const disc=Number($('#poDisc').val()||0), tax=Number($('#poTax').val()||0);
+          if(!id||qty<=0){alert('Select product & valid qty');return;}
+          poItems.push({productId:id,productName:name,qty,unitPrice:unit,discount:disc,tax}); render();
+          $('#poProd').val('');$('#poQty').val(1);$('#poPrice').val(0);$('#poDisc').val(0);$('#poTax').val(0);
+        });
+        window.delItem=i=>{poItems.splice(i,1);render();};
+
+        $('#poSave').on('click',function(){
+          if(!$('#poVendor').val()){alert('Select vendor');return;}
+          if(!poItems.length){alert('Add at least one item');return;}
+          rebuildHidden();
+          $.ajax({
+            url:'/PurchaseOrder/Create', type:'POST',
+            data: $('#poCreateForm').serialize(),
+            success: ()=>{ alert('Saved'); location.href='/PurchaseOrder/Index'; },
+            error: x=> alert('Error: '+(x.responseText||x.statusText))
+          });
+        });
+    </script>
+}

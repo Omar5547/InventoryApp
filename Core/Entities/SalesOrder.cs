@@ -13,7 +13,7 @@ namespace Core.Entities
        
         public Customer? Customer { get; set; } 
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-        public decimal Discount { get; set; }
+        
         public string Currency { get; set; } = "USD";
         public OrderStatus Status { get; set; } = OrderStatus.Open;
         public ICollection<SalesOrderItem> SalesOrderItems { get; set; } = new List<SalesOrderItem>();

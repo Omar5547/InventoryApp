@@ -22,6 +22,11 @@ namespace InventoryApp.Provider
                 Email = dto.Email,
                 Phone = dto.Phone,
                 Address = dto.Address,
+                City = dto.City,
+                Country = dto.Country,
+                Fax = dto.Fax,
+                Discount = dto.Discount,
+
                 IsActive = dto.IsActive,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt,
@@ -38,7 +43,12 @@ namespace InventoryApp.Provider
                 Name = dto.Name,
                 Email = dto.Email,
                 Phone = dto.Phone,
+
                 Address = dto.Address,
+                City = dto.City,
+                Country = dto.Country,
+                Fax = dto.Fax,
+                Discount = dto.Discount,
                 IsActive = dto.IsActive,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt,
@@ -52,6 +62,11 @@ namespace InventoryApp.Provider
                 Email = Model.Email,
                 Phone = Model.Phone,
                 Address = Model.Address,
+                City = Model.City,
+                Country = Model.Country,
+                Fax = Model.Fax,
+                Discount = Model.Discount,
+
                 IsActive = Model.IsActive
 
             };
@@ -66,6 +81,11 @@ namespace InventoryApp.Provider
                 Email = model.Email,
                 Phone = model.Phone,
                 Address = model.Address,
+                City = model.City,
+                Country = model.Country,
+                Fax = model.Fax,
+                Discount = model.Discount,
+
                 IsActive = model.IsActive
             };
             await _vendorService.UpdateAsync( dto);

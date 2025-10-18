@@ -22,6 +22,10 @@ namespace InventoryApp.Provider
                 Email = dto.Email,
                 Address = dto.Address,
                 Phone = dto.Phone,
+                City = dto.City,
+                Country = dto.Country,
+                Fax = dto.Fax,
+                Discount = dto.Discount,
                 IsActive = dto.IsActive,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt
@@ -39,6 +43,11 @@ namespace InventoryApp.Provider
                 Email = dto.Email,
                 Address = dto.Address,
                 Phone = dto.Phone,
+                City = dto.City,
+                Country = dto.Country,
+                Fax = dto.Fax,
+                Discount = dto.Discount,
+
                 IsActive = dto.IsActive,
                 CreatedAt = dto.CreatedAt,
                 UpdatedAt = dto.UpdatedAt
@@ -53,6 +62,10 @@ namespace InventoryApp.Provider
                 Email = model.Email,
                 Address = model.Address,
                 Phone = model.Phone,
+                City = model.City,
+                Country = model.Country,
+                Fax = model.Fax,
+                Discount = model.Discount,
                 IsActive = model.IsActive
             };
            return await _customerService.AddAsync(dto);
@@ -67,6 +80,11 @@ namespace InventoryApp.Provider
                 Email = model.Email,
                 Phone = model.Phone,
                 Address = model.Address,
+                City = model.City,
+                Country = model.Country,
+                Fax = model.Fax,
+                Discount = model.Discount,
+
                 IsActive = model.IsActive
 
 

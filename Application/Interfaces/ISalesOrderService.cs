@@ -10,14 +10,9 @@ namespace Application.Interfaces
     public interface ISalesOrderService
     {
         Task<int> AddAsync(SalesOrderDto salesOrderDto, IEnumerable<SalesOrderItemDto> items);
-        Task UpdateAsync(SalesOrderDto salesOrderDto);
-        Task AddItemAsync(SalesOrderItemDto item);
-        Task UpdateItemAsync(SalesOrderItemDto item);
-        Task RemoveItemAsync(int itemId);
+        Task UpdateAsync(SalesOrderDto salesOrderDto, IEnumerable<SalesOrderItemDto> items);
         Task<SalesOrderDto?> GetByIdAsync(int id);
-        Task<IReadOnlyList<SalesOrderListItemDto>> ListAsync(string? search = null);
-        Task PostAsync(int orderId, int locationId);
-        Task CancelAsync(int orderId);
+        Task<IEnumerable<SalesOrderListItemDto>> GetAllAsync(string? search = null);
         Task DeleteAsync(int id);
 
     }

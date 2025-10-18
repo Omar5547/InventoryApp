@@ -15,6 +15,7 @@ namespace Application.DTO
         public decimal Qty { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal Discount { get; set; }
-        public decimal Total => (Qty * UnitPrice) - Discount;
+        public decimal Tax { get; set; }
+        public decimal Total { get; set; }
     }
 }

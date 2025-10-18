@@ -3,6 +3,7 @@ using Application.Interfaces;
 using Core.Entities;
 using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,44 +33,10 @@ namespace Application.Services
             await _productRepo.SaveAsync();
         }
 
-        public Task<bool> ExistsSkuAsync(string sku, int? excludeId = null)
-        {
-            sku = sku.Trim();
-            var query = _productRepo.Query().AsNoTracking()
-                .Where(p => p.SKU == sku);
-            if (excludeId.HasValue) query = query.Where(p => p.Id != excludeId.Value);
-            return query.AnyAsync();
-        }
+      
 
        
 
-        public async Task<IReadOnlyList<ProductListItemDto>> GetAllAsync(string? search = null, int? skip = null, int? take = null)
-        {
-            var products =  _productRepo.Query().AsNoTracking();
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                products = products.Where(p => p.Name.Contains(search) || (p.SKU.Contains(search)));
-            }
-            
-            var result = from p in products
-                         join c in _categoryRepo.Query().AsNoTracking() on p.CategoryId equals c.Id into pc
-                         from c in pc.DefaultIfEmpty()
-                         orderby p.Name
-                         select new ProductListItemDto
-                         {
-                             Id = p.Id,
-                             Name = p.Name,
-                                SKU = p.SKU,
-                             CategoryName = c != null ? c.Name : string.Empty,
-                             SalePrice = p.SalePrice,
-                             Unit = p.Unit,
-                             IsActive = p.IsActive,
-                         };
-            if (skip.HasValue) result = result.Skip(skip.Value);
-            if (take.HasValue) result = result.Take(take.Value);
-            return await result.ToListAsync();
-
-        }
 
         public async Task<ProductDto?> GetByIdAsync(int id)
         {
@@ -78,9 +45,10 @@ namespace Application.Services
                 .Select(p => new ProductDto
                 {
                     Id = p.Id,
-                    SKU = p.SKU,
                     Name = p.Name,
-                    PurchasePrice = p.PurchasePrice,
+                    Code = p.Code,
+                    Description = p.Description,
+                    Quantity =p.Quantity,
                     SalePrice = p.SalePrice,
                     Unit = p.Unit,
                     IsActive = p.IsActive,
@@ -101,10 +69,12 @@ namespace Application.Services
         {
             var product = await _productRepo.GetByIdAsync(productDto.Id);
             if (product == null) return;
-            product.SKU = productDto.SKU;
+            product.Code = productDto.Code;
             product.Name = productDto.Name;
-            product.PurchasePrice = productDto.PurchasePrice;
             product.SalePrice = productDto.SalePrice;
+            product.Quantity = productDto.Quantity;
+            product.Description = productDto.Description;
+
             product.Unit = productDto.Unit;
             product.IsActive = productDto.IsActive;
             product.UpdatedAt = productDto.UpdatedAt;
@@ -120,14 +90,18 @@ namespace Application.Services
         {
             var Product = new Product
             {
-                SKU = productDto.SKU,
+                Code = productDto.Code,
                 Name = productDto.Name,
-                PurchasePrice = productDto.PurchasePrice,
+                
                 SalePrice = productDto.SalePrice,
+                Quantity = productDto.Quantity,
+                Description = productDto.Description,
+
                 Unit = productDto.Unit,
                 CategoryId = productDto.CategoryId,
                 IsActive = productDto.IsActive,
                 ImageUrl = productDto.ImageUrl,
+               
                 UpdatedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow
             };
@@ -136,5 +110,37 @@ namespace Application.Services
             return Product.Id;
         }
 
+       
+
+        public async Task<IEnumerable<ProductDto>> GetAllAsync(string? search)
+        {
+            var query = _productRepo.Query().AsNoTracking().Where(p => p.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(p => p.Name.Contains(search) || p.Code.Contains(search));
+            }
+
+            var list = query
+                .OrderBy(p => p.Name)
+                .Select(p => new ProductDto
+                {
+                    Id = p.Id,
+                    Code = p.Code,
+                    Name = p.Name,
+                    Description = p.Description,
+                    SalePrice = p.SalePrice,
+                    Quantity = p.Quantity,
+                    Unit = p.Unit,
+                    ImageUrl = p.ImageUrl,
+                    CategoryId = p.CategoryId,
+                    CategoryName = p.Category.Name ?? string.Empty,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+                .ToList();
+
+            return list;
+        }
     }
 }

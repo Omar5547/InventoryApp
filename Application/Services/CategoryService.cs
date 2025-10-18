@@ -45,25 +45,7 @@ namespace Application.Services
         }
 
 
-        public async Task<IReadOnlyList<CategoryDto>> GetAllAsync(string? search = null)
-        {
-            var categories =  _categoryRepo.Query().AsNoTracking();
-            if (!string.IsNullOrEmpty(search))
-            {
-                categories = categories.Where(c => c.Name.Contains(search));
-            }
-            return await categories.OrderBy(c => c.Name)
-                .Select( c => new CategoryDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Description = c.Description,
-                    IsActive = c.IsActive,
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.UpdatedAt
-                })
-                .ToListAsync();
-        }
+       
 
         public async Task<CategoryDto?> GetByIdAsync(int id)
         {
@@ -94,6 +76,24 @@ namespace Application.Services
             await _categoryRepo.SaveAsync();
         }
 
-        
+        public async Task<IEnumerable<CategoryDto>> GetAllAsync(string? search)
+        {
+            var categories = _categoryRepo.Query().AsNoTracking();
+            if (!string.IsNullOrEmpty(search))
+            {
+                categories = categories.Where(c => c.Name.Contains(search));
+            }
+            return await categories.OrderBy(c => c.Name)
+                .Select(c => new CategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Description = c.Description,
+                    IsActive = c.IsActive,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt
+                })
+                .ToListAsync();
+        }
     }
 }

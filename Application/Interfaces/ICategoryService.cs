@@ -9,7 +9,7 @@ namespace Application.Interfaces
 {
     public interface ICategoryService
     {
-        Task<IReadOnlyList<CategoryDto>> GetAllAsync(string? search=null);
+        Task<IEnumerable<CategoryDto>> GetAllAsync(string? search=null);
         Task<CategoryDto?> GetByIdAsync(int id);
         Task <int> AddAsync (CategoryDto categoryDto);
         Task UpdateAsync( CategoryDto categoryDto);

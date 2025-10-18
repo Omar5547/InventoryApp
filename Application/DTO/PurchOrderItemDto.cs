@@ -10,8 +10,11 @@ namespace Application.DTO
     {
         public int PurchOrderId { get; set; }
         public int ProductId { get; set; }
+        public string? ProductName { get; set; }
         public decimal Qty { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal Discount { get; set; }
+        public decimal Tax { get; set; }
+        public decimal Total { get; set; }
     }
 }

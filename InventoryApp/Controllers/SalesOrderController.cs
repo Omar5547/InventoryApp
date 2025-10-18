@@ -1,4 +1,5 @@
-﻿using InventoryApp.Provider;
+﻿using Core.Entities;
+using InventoryApp.Provider;
 using InventoryApp.ViewModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -43,12 +44,18 @@ namespace InventoryApp.Controllers
         // POST: SalesOrderController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(SalesOrderViewModel model)
+        public async Task<IActionResult> Create( SalesOrderViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-            await _salesOrderProvider.CreateAsync(model);
-            return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            {
+                await _salesOrderProvider.CreateAsync(model);
+                return Ok();
+
+            }
+          
+
+            var salesorder = await _salesOrderProvider.GetEmptyWithCustomerAsync();
+            return BadRequest(new {  salesorder });
         }
 
         // GET: SalesOrderController/Edit/5
@@ -59,18 +66,28 @@ namespace InventoryApp.Controllers
             {
                 return NotFound();
             }
+            if (salesorder.ProductList == null || salesorder.ProductList.Count == 0)
+            {
+                var emptyModel = await _salesOrderProvider.GetEmptyWithCustomerAsync();
+                salesorder.ProductList = emptyModel.ProductList;
+            }
             return View(salesorder);
         }
 
         // POST: SalesOrderController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task <IActionResult> Edit(SalesOrderViewModel model)
+        public async Task<IActionResult> Edit( SalesOrderViewModel model)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-            await _salesOrderProvider.UpdateAsync(model);
-            return RedirectToAction(nameof(Index));
+            if (ModelState.IsValid)
+            { 
+                await _salesOrderProvider.UpdateAsync(model);
+                return Ok();
+            }
+            var emptyModel = await _salesOrderProvider.GetEmptyWithCustomerAsync();
+            model.ProductList = emptyModel.ProductList;
+            model.CustomerList = emptyModel.CustomerList;
+            return BadRequest(model);
         }
 
         // GET: SalesOrderController/Delete/5
@@ -82,28 +99,18 @@ namespace InventoryApp.Controllers
             {
                 return NotFound();
             }
+            
             return View(salesorder);
         }
 
         // POST: SalesOrderController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirm(int id)
+        public async Task<IActionResult> Delete(int id , IFormCollection collection)
         {
             await _salesOrderProvider.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
-        [HttpPost]
-        public async Task<IActionResult> Post(int id, int locationId)
-        {
-            await _salesOrderProvider.PostAsync(id, locationId);
-            return RedirectToAction(nameof(Details), new { id });
-        }
-        [HttpPost]
-        public async Task<IActionResult> Cancel(int id)
-        {
-            await _salesOrderProvider.CancelAsync(id);
-            return RedirectToAction(nameof(Details), new { id });
-        }
+      
     }
 }

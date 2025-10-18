@@ -16,19 +16,19 @@ namespace Application.Services
         private readonly IGenericRepository<SalesOrder> _salesorderRepo;
         private readonly IGenericRepository<Customer> _customerRepo;
         private readonly IGenericRepository<SalesOrderItem> _itemRepo;
-        private readonly IStockService _stock;
+        private readonly IGenericRepository<Product> _productRepo;
 
         public SalesOrderService(
             IGenericRepository<SalesOrder> salesorderRepo,
             IGenericRepository<Customer> customerRepo,
             IGenericRepository<SalesOrderItem> ItemRepo,
-            IStockService stock
+            IGenericRepository<Product> productRepo
             ) 
         {
             _salesorderRepo = salesorderRepo;
             _customerRepo = customerRepo;
             _itemRepo = ItemRepo;
-            _stock = stock;
+            _productRepo = productRepo;
         }
         public async Task<int> AddAsync(SalesOrderDto salesOrderDto, IEnumerable<SalesOrderItemDto> items)
         {
@@ -37,72 +37,60 @@ namespace Application.Services
             {
                 CustomerId = salesOrderDto.CustomerId,
                 OrderDate = salesOrderDto.OrderDate,
-                Discount = salesOrderDto.Discount,
                 Currency = salesOrderDto.Currency,
-                Status = salesOrderDto.Status,
-                IsActive = salesOrderDto.IsActive,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
+                Status = OrderStatus.Open,
+                IsActive = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                SalesOrderItems = items.Select(i => new SalesOrderItem
+                {
+                    ProductId = i.ProductId,
+                    Qty = i.Qty,
+                    UnitPrice = i.UnitPrice,
+                    Discount = i.Discount,
+                    Tax = i.Tax,
+                    Total = i.Qty * i.UnitPrice * (1 - i.Discount / 100) * (1 + i.Tax / 100),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                }).ToList()
+
             };
             await _salesorderRepo.AddAsync(salesorder);
             await _salesorderRepo.SaveAsync();
-
-
-            foreach (var itemDto in items)
+            foreach (var item in salesorder.SalesOrderItems)
             {
-                var item = new SalesOrderItem
+                var product = await _productRepo.GetByIdAsync(item.ProductId);
+                if (product != null)
                 {
-                    SalesOrderId = salesorder.Id,
-                    ProductId = itemDto.ProductId,
-                    Qty = itemDto.Qty,
-                    UnitPrice = itemDto.UnitPrice,
-                    Discount = itemDto.Discount,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    IsActive = true
-                };
-                await _itemRepo.AddAsync(item);
+                    product.Quantity -= item.Qty;
+                    product.UpdatedAt = DateTime.UtcNow;
+                    _productRepo.Update(product);
+                }
             }
-            await _itemRepo.SaveAsync();
+            await _productRepo.SaveAsync();
             return salesorder.Id;
-        }
-
-        public async Task AddItemAsync(SalesOrderItemDto item)
-        {
-            var salesorder = await _salesorderRepo.GetByIdAsync(item.SalesOrderId);
-            if (salesorder == null) return;
-            var orderItem = new SalesOrderItem
-            {
-                SalesOrderId = item.SalesOrderId,
-                ProductId = item.ProductId,
-                Qty = item.Qty,
-                UnitPrice = item.UnitPrice,
-                Discount = item.Discount,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                IsActive = true
-            };
-            await _itemRepo.AddAsync(orderItem);  
-        }
-
-        public async Task CancelAsync(int orderId)
-        {
-            var salesorder = await _salesorderRepo.GetByIdAsync(orderId);
-            if (salesorder.Status == OrderStatus.Posted) return;
-            salesorder.Status = OrderStatus.Canceled;
-            salesorder.UpdatedAt = DateTime.UtcNow;
-            _salesorderRepo.Update(salesorder);
-            await _salesorderRepo.SaveAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
             var salesorder = await _salesorderRepo.GetByIdAsync(id);
             if (salesorder == null) return;
-               
-           _salesorderRepo.Delete(salesorder);
-              await _salesorderRepo.SaveAsync();
+            foreach (var item in salesorder.SalesOrderItems)
+            {
+                var product = await _productRepo.GetByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Quantity += item.Qty;
+                    product.UpdatedAt = DateTime.UtcNow;
+                    _productRepo.Update(product);
+                }
+            }
+            _salesorderRepo.Delete(salesorder);
+            await _salesorderRepo.SaveAsync();
+            await _productRepo.SaveAsync();
         }
+
+     
 
         public async Task<SalesOrderDto?> GetByIdAsync(int id)
         {
@@ -119,7 +107,6 @@ namespace Application.Services
                    CustomerId = salesorder.CustomerId,
                    CustomerName = salesorder.Customer?.Name,
                    OrderDate = salesorder.OrderDate,
-                   Discount =salesorder.Discount,
                    Currency = salesorder.Currency,
                    Status = salesorder.Status,
                    IsActive = salesorder.IsActive,
@@ -133,97 +120,98 @@ namespace Application.Services
                        Qty = i.Qty,
                        UnitPrice = i.UnitPrice,
                        Discount = i.Discount,
+                       Tax = i.Tax,
+                      Total = i.Total
                    }).ToList()
                    };
 
         }
 
-        public async Task<IReadOnlyList<SalesOrderListItemDto>> ListAsync(string? search = null)
-        {
-            var salesorder = from s in _salesorderRepo.Query().AsNoTracking()
+      
+        
 
-                        join c in _customerRepo.Query().AsNoTracking() on s.CustomerId equals c.Id into sc
-                        from c in sc.DefaultIfEmpty()
-                        orderby s.OrderDate descending
-                        select new SalesOrderListItemDto
-                        {
-                            Id = s.Id,
-                            CustomerName = c != null ? c.Name : string.Empty,
-                            OrderDate = s.OrderDate,
-                            Status = s.Status,
-                            Currency = s.Currency,
-                            Discount = s.Discount,
-                            
-                        };
-            if (!string.IsNullOrEmpty(search))
-            {
-                salesorder = salesorder.Where(s => s.CustomerName.Contains(search));
-            }
-            return salesorder.ToList();
+     
 
-        }
+     
+       
 
-        public async Task PostAsync(int orderId, int locationId)
-        {
-            var salesorder = await _salesorderRepo.GetByIdAsync(orderId);
-            if (salesorder.Status != OrderStatus.Open) return;
-            var items = await _itemRepo.Query()
-                .Where(i => i.SalesOrderId == orderId)
-                .ToListAsync();
-            foreach (var item in items)
-            {
-                await _stock.AdjustStockAsync(item.ProductId, locationId, -item.Qty, sourceType: "SO_POST", sourceId: orderId);
-            }
-            salesorder.Status = OrderStatus.Posted;
-            salesorder.UpdatedAt = DateTime.UtcNow;
-            _salesorderRepo.Update(salesorder);
-            await _salesorderRepo.SaveAsync();
-        }
-
-        public async Task RemoveItemAsync(int itemId)
-        {
-            var item = await _itemRepo.GetByIdAsync(itemId);
-            var salesorder = await _salesorderRepo.GetByIdAsync(item.SalesOrderId);
-            if (salesorder.Status != OrderStatus.Open) return;
-            
-            _itemRepo.Delete(item);
-            await _itemRepo.SaveAsync();
-        }
-
-        public async Task UpdateAsync(SalesOrderDto salesOrderDto)
+        public async Task UpdateAsync(SalesOrderDto salesOrderDto, IEnumerable<SalesOrderItemDto> items)
         {
             var salesorder = await _salesorderRepo.GetByIdAsync(salesOrderDto.Id);
             if (salesorder == null) return;
 
             salesorder.CustomerId = salesOrderDto.CustomerId;
             salesorder.OrderDate = salesOrderDto.OrderDate;
-            salesorder.Discount = salesOrderDto.Discount;
             salesorder.Currency = salesOrderDto.Currency;
 
             salesorder.Status = salesOrderDto.Status;
             salesorder.IsActive = salesOrderDto.IsActive;
-            salesorder.CreatedAt = DateTime.UtcNow;
+           
             salesorder.UpdatedAt = DateTime.UtcNow;
+            var exisitingItems = await _itemRepo.Query().Where(i => i.SalesOrderId == salesorder.Id).ToListAsync();
+            foreach (var item in exisitingItems)
+            {
+                var product = await _productRepo.GetByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Quantity += item.Qty;
+                    product.UpdatedAt = DateTime.UtcNow;
+                    _productRepo.Update(product);
+                }
+                _itemRepo.Delete(item);
 
+            }
 
+            foreach (var item in items)
+            {
+                var product = await _productRepo.GetByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Quantity -= item.Qty;
+                    product.UpdatedAt = DateTime.UtcNow;
+                    _productRepo.Update(product);
+                }
+                var orderItem = new SalesOrderItem
+                {
+                    SalesOrderId = salesorder.Id,
+                    ProductId = item.ProductId,
+                    Qty = item.Qty,
+                    UnitPrice = item.UnitPrice,
+                    Discount = item.Discount,
+                    Tax = item.Tax,
+                    Total = item.Qty * item.UnitPrice * (1 - item.Discount / 100M) * (1 + item.Tax / 100M),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    IsActive = true
+                };
+                await _itemRepo.AddAsync(orderItem);
+            }
             _salesorderRepo.Update(salesorder);
             await _salesorderRepo.SaveAsync();
         }
 
-        public async Task UpdateItemAsync(SalesOrderItemDto item)
+       public async Task<IEnumerable<SalesOrderListItemDto>> GetAllAsync(string? search)
         {
-           var salesitem = await _itemRepo.GetByIdAsync(item.Id);
-           var salesorder = await _salesorderRepo.GetByIdAsync(salesitem.SalesOrderId);
-            if (salesorder == null) return;
-            item.ProductId = item.ProductId;
-            item.Qty = item.Qty;
-            item.UnitPrice = item.UnitPrice;
-            item.Discount = item.Discount;
-            item.UpdatedAt = DateTime.UtcNow;
-            _itemRepo.Update(salesitem);
-            await _itemRepo.SaveAsync();
-        }
+            var salesorder = from s in _salesorderRepo.Query().AsNoTracking()
 
-        
+                             join c in _customerRepo.Query().AsNoTracking() on s.CustomerId equals c.Id into sc
+                             from c in sc.DefaultIfEmpty()
+                             orderby s.OrderDate descending
+                             select new SalesOrderListItemDto
+                             {
+                                 Id = s.Id,
+                                 CustomerName = c != null ? c.Name : string.Empty,
+                                 OrderDate = s.OrderDate,
+                                 Status = s.Status,
+                                 Currency = s.Currency,
+
+
+                             };
+            if (!string.IsNullOrEmpty(search))
+            {
+                salesorder = salesorder.Where(s => s.CustomerName.Contains(search));
+            }
+            return salesorder.ToList();
+        }
     }
 }

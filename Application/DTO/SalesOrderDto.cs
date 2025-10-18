@@ -11,7 +11,6 @@ namespace Application.DTO
     {
         public int CustomerId { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-        public decimal Discount { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public string Currency { get; set; } = "USD";
         public OrderStatus Status { get; set; } = OrderStatus.Open;

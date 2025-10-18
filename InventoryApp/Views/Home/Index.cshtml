@@ -17,7 +17,11 @@
                     <div class="service-item d-flex" style="width:100% !important;">
                         <div class="icon flex-shrink-0"><i class="bi @item.Description"></i></div>
                         <div>
-                            <h4 class="title"><a href="/Home/Products/@item.Id" class="stretched-link">@item.Name</a></h4>
+                            <h4 class="title">
+                                <a asp-controller="Home" asp-action="Products" asp-route-id="@item.Id" class="stretched-link">
+                                    @item.Name
+                                </a>
+                            </h4>
                             <p class="description">@item.Description</p>
                         </div>
                     </div>
@@ -33,7 +37,7 @@
     </div>
 
 </section><!-- /Services Section -->
-<section id="portfolio" class="portfolio section">
+@* <section id="portfolio" class="portfolio section">
 
     <!-- Section Title -->
     <div class="container section-title" data-aos="fade-up">
@@ -65,8 +69,9 @@
 
     </div>
 
-</section><!-- /Portfolio Section -->
-<section id="testimonials" class="testimonials section light-background">
+</section> *@
+<!-- /Portfolio Section -->
+@* <section id="testimonials" class="testimonials section light-background">
 
     <!-- Section Title -->
     <div class="container section-title aos-init aos-animate" data-aos="fade-up">
@@ -141,7 +146,7 @@
     </div><!-- End container -->
 
 </section>
-<section id="pricing" class="pricing section" style="background:white">
+ *@<section id="pricing" class="pricing section" style="background:white">
 
     <!-- Section Title -->
     <div class="container section-title aos-init aos-animate" data-aos="fade-up">
@@ -160,7 +165,7 @@
                         <h3 style="overflow:hidden; height:50px">@item.Name</h3>
                         <h4><sup>$</sup>@item.SalePrice<span>  </span></h4>
                         <img src="@item.ImageUrl" width="200" style="min-height=" 200px"; max-height:200px;>
-                        <a href="/home/currentProduct/@item.Id" class="buy-btn">تفاصيل</a>
+                        <a href="/Product/Details/@item.Id" class="buy-btn">تفاصيل</a>
                     </div>
                 </div>
 

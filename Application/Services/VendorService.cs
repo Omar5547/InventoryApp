@@ -27,6 +27,11 @@ namespace Application.Services
                 Email = vendorDto.Email,
                 Phone = vendorDto.Phone,
                 Address = vendorDto.Address,
+                City = vendorDto.City,
+                Country = vendorDto.Country,
+                Fax = vendorDto.Fax,
+                Discount = vendorDto.Discount,
+                
                 IsActive = vendorDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -44,27 +49,7 @@ namespace Application.Services
             await _vendorRepo.SaveAsync();
         }
 
-        public async Task<IReadOnlyList<VendorDto>> GetAllAsync(string? search = null)
-        {
-            var vendor = _vendorRepo.Query().AsNoTracking();
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                vendor = vendor.Where(v => v.Name.Contains(search) || (v.Phone ?? "").Contains(search));
-            }
-            return await vendor.OrderBy(c => c.Name)
-                .Select(vendor => new VendorDto
-                {
-                    Id = vendor.Id,
-                    Name = vendor.Name,
-                    Email = vendor.Email,
-                    Phone = vendor.Phone,
-                    Address = vendor.Address,
-                    IsActive = vendor.IsActive,
-                    CreatedAt = vendor.CreatedAt,
-                    UpdatedAt = vendor.UpdatedAt
-                })
-                .ToListAsync();
-        }
+        
 
         public async Task<VendorDto?> GetByIdAsync(int id)
         {
@@ -76,7 +61,13 @@ namespace Application.Services
                 Name = vendor.Name,
                 Email = vendor.Email,
                 Phone = vendor.Phone,
+
                 Address = vendor.Address,
+                City = vendor.City,
+                Country = vendor.Country,
+                Fax = vendor.Fax,
+                Discount = vendor.Discount,
+
                 IsActive = vendor.IsActive,
                 CreatedAt = vendor.CreatedAt,
                 UpdatedAt = vendor.UpdatedAt
@@ -91,10 +82,42 @@ namespace Application.Services
             vendor.Email = vendorDto.Email;
             vendor.Address = vendorDto.Address;
             vendor.Phone= vendorDto.Phone;
+            vendor.City = vendorDto.City;
+            vendor.Country = vendorDto.Country;
+            vendor.Fax = vendorDto.Fax;
+            vendor.Discount = vendorDto.Discount;
+
             vendor.IsActive = vendorDto.IsActive;
             vendor.UpdatedAt = DateTime.UtcNow;
             _vendorRepo.Update(vendor);
             await _vendorRepo.SaveAsync();
+        }
+
+        public async Task<IEnumerable<VendorDto>>GetAllAsync(string? search)
+        {
+            var vendor = _vendorRepo.Query().AsNoTracking();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                vendor = vendor.Where(v => v.Name.Contains(search) || (v.Phone ?? "").Contains(search));
+            }
+            return await vendor.OrderBy(c => c.Name)
+                .Select(vendor => new VendorDto
+                {
+                    Id = vendor.Id,
+                    Name = vendor.Name,
+                    Email = vendor.Email,
+                    Phone = vendor.Phone,
+                    Address = vendor.Address,
+                    City = vendor.City,
+                    Country = vendor.Country,
+                    Fax = vendor.Fax,
+                    Discount = vendor.Discount,
+
+                    IsActive = vendor.IsActive,
+                    CreatedAt = vendor.CreatedAt,
+                    UpdatedAt = vendor.UpdatedAt
+                })
+                .ToListAsync();
         }
     }
 }

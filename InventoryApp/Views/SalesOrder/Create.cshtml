@@ -2,153 +2,162 @@
 @{
     ViewData["Title"] = "Create Sales Order";
 }
-
 <div class="container">
     <h2>Create Sales Order</h2>
 
-    <form asp-action="Create" method="post">
+    <form id="soCreateForm" method="post" onsubmit="return false;">
+      
+
+        
         <div class="form-group">
             <label>Customer</label>
-            <select name="CustomerId" class="form-control" required>
+            <select name="CustomerId" id="soCustomerId" class="form-control" required>
                 <option value="">Select Customer</option>
-                @foreach (var customer in Model.CustomerList)
+                @foreach (var c in Model.CustomerList)
                 {
-                    <option value="@customer.Value">@customer.Text</option>
-                   
+                    <option value="@c.Value">@c.Text</option>
                 }
             </select>
         </div>
 
         <div class="form-group">
             <label>Order Date</label>
-            <input type="date" name="OrderDate" class="form-control" value="@Model.OrderDate.ToString("yyyy-MM-dd")" required />
-        </div>
-
-        <div class="form-group">
-            <label>Discount</label>
-            <input type="number" name="Discount" class="form-control" value="0" step="0.01" />
+            <input type="date" name="OrderDate" id="soOrderDate" class="form-control"
+                   value="@Model.OrderDate.ToString("yyyy-MM-dd")" required />
         </div>
 
         <div class="form-group">
             <label>Currency</label>
-            <input type="text" name="Currency" class="form-control" value="USD" />
+            <input type="text" name="Currency" id="soCurrency" class="form-control" value="@Model.Currency" />
         </div>
 
-        <h5>Order Items</h5>
-        <table class="table table-bordered" id="orderItemsTable">
-            <thead>
-                <tr>
-                    <th>Product</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Discount</th>
-                    <th>Total</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- الصفوف تُضاف هنا ديناميكياً -->
-            </tbody>
-        </table>
-
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <label>Select Product:</label>
-                <select id="productSelect" class="form-control">
-                    <option value="">Select Product</option>
-                    @foreach (var product in Model.ProductList)
+        
+        <h5 class="mt-4">Add Product</h5>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <label>Select Product</label>
+                <select id="soProd" class="form-control">
+                    <option value="">Select</option>
+                    @foreach (var p in Model.ProductList)
                     {
-                        <option value="@product.Id" data-name="@product.Name" data-price="@product.SalePrice">@product.Name - @product.SalePrice</option>
+                        <option value="@p.Id" data-name="@p.Name" data-price="@p.SalePrice">@p.Name - @p.SalePrice</option>
                     }
                 </select>
             </div>
             <div class="col-md-2">
-                <label>Quantity:</label>
-                <input type="number" id="quantityInput" class="form-control" value="1" min="1" />
+                <label>Qty</label>
+                <input id="soQty" type="number" class="form-control" value="1" min="1">
             </div>
             <div class="col-md-2">
-                <label>Unit Price:</label>
-                <input type="number" id="unitPriceInput" class="form-control" value="0" step="0.01" />
+              <label>Unit Price</label>
+              <input id="soPrice" type="number" class="form-control" value="0" step="0.01">
+          </div>
+            <div class="col-md-2">
+                <label>Discount %</label>
+                <input id="soDisc" type="number" class="form-control" value="0" step="0.01">
             </div>
             <div class="col-md-2">
-                <label>Discount:</label>
-                <input type="number" id="discountInput" class="form-control" value="0" step="0.01" />
+                <label>Tax %</label>
+                <input id="soTax" type="number" class="form-control" value="0" step="0.01">
             </div>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-primary mt-4" onclick="addOrderItem()">Add Item</button>
+            <div class="col-md-1 d-flex align-items-end">
+                <button type="button" id="soAdd" class="btn btn-primary w-100">Add</button>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-success mt-4">Save Order</button>
+       
+        <h5 class="mt-4">Order Items</h5>
+        <table class="table table-bordered" id="soTable">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Unit</th>
+                    <th>Disc%</th>
+                    <th>Tax%</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+      
+        <div id="soHidden">
+
+        </div>
+
+        <div class="mt-3">
+            <button type="button" id="soSave" class="btn btn-success">Save Order</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "SalesOrder")">Cancel</a>
+        </div>
     </form>
 </div>
 
 @section Scripts {
     <script>
-        let orderItemsIndex = 0;
+        let soItems = [];
+        const calc = o => o.qty*o.unitPrice*(1-o.discount/100)*(1+o.tax/100);
 
-        function addOrderItem() {
-            var productSelect = document.getElementById('productSelect');
-            var productId = productSelect.value;
-            var productName = productSelect.options[productSelect.selectedIndex].getAttribute('data-name');
-            var quantity = document.getElementById('quantityInput').value;
-            var unitPrice = document.getElementById('unitPriceInput').value;
-            var discount = document.getElementById('discountInput').value;
-
-            if (!productId || quantity <= 0) {
-                alert("Please select product and enter quantity.");
-                return;
-            }
-
-            var total = (quantity * unitPrice) - discount;
-
-            var tbody = document.querySelector('#orderItemsTable tbody');
-            var row = `
-                <tr>
-                    <td>
-                        <input type="hidden" name="OrderItems[${orderItemsIndex}].ProductId" value="${productId}" />
-                        <input type="hidden" name="OrderItems[${orderItemsIndex}].ProductName" value="${productName}" />
-                        ${productName}
-                    </td>
-                    <td>
-                        <input type="hidden" name="OrderItems[${orderItemsIndex}].Quantity" value="${quantity}" />
-                        ${quantity}
-                    </td>
-                    <td>
-                        <input type="hidden" name="OrderItems[${orderItemsIndex}].UnitPrice" value="${unitPrice}" />
-                        ${unitPrice}
-                    </td>
-                    <td>
-                        <input type="hidden" name="OrderItems[${orderItemsIndex}].Discount" value="${discount}" />
-                        ${discount}
-                    </td>
-                    <td>
-                        <input type="hidden" name="OrderItems[${orderItemsIndex}].Total" value="${total}" />
-                        ${total}
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeOrderItem(this)">Remove</button>
-                    </td>
-                </tr>
-            `;
-            tbody.insertAdjacentHTML('beforeend', row);
-            orderItemsIndex++;
-
-            // Clear fields
-            document.getElementById('quantityInput').value = 1;
-            document.getElementById('unitPriceInput').value = 0;
-            document.getElementById('discountInput').value = 0;
+        function render(){
+          const tb = $('#soTable tbody'); tb.empty();
+          soItems.forEach((x,i)=>tb.append(
+            `<tr>
+              <td>${x.productName}</td>
+              <td>${x.qty.toFixed(3)}</td>
+              <td>${x.unitPrice.toFixed(2)}</td>
+              <td>${x.discount.toFixed(2)}%</td>
+              <td>${x.tax.toFixed(2)}%</td>
+              <td>${calc(x).toFixed(2)}</td>
+              <td><button type="button" class="btn btn-danger btn-sm" onclick="delItem(${i})">Remove</button></td>
+            </tr>`
+          ));
+          rebuildHidden();
         }
-
-        function removeOrderItem(button) {
-            button.closest('tr').remove();
+        function rebuildHidden(){
+          const h = $('#soHidden'); h.empty();
+          soItems.forEach((x,i)=>{
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].ProductId`,value:x.productId}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].ProductName`,value:x.productName}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Qty`,value:x.qty}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].UnitPrice`,value:x.unitPrice}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Discount`,value:x.discount}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Tax`,value:x.tax}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Total`,value:calc(x).toFixed(2)}).appendTo(h);
+          });
         }
+        $('#soProd').on('change',function(){
+          const price = Number(this.options[this.selectedIndex]?.getAttribute('data-price')||0);
+          $('#soPrice').val(price);
+        });
+        $('#soAdd').on('click',function(){
+          const sel=document.getElementById('soProd');
+          const id=Number($('#soProd').val());
+          const name=sel.options[sel.selectedIndex]?.getAttribute('data-name')||'';
+          const qty=Number($('#soQty').val()||0);
+          const unit=Number($('#soPrice').val()||0);
+          const disc=Number($('#soDisc').val()||0);
+          const tax=Number($('#soTax').val()||0);
+          if(!id||qty<=0){alert('Select product & valid qty');return;}
+          soItems.push({productId:id,productName:name,qty,unitPrice:unit,discount:disc,tax});
+          render();
+          $('#soProd').val('');$('#soQty').val(1);$('#soPrice').val(0);$('#soDisc').val(0);$('#soTax').val(0);
+        });
+        window.delItem=i=>{soItems.splice(i,1);render();};
 
-        // Update price when product is selected
-        document.getElementById('productSelect').addEventListener('change', function() {
-            var selectedOption = this.options[this.selectedIndex];
-            var price = selectedOption.getAttribute('data-price') || 0;
-            document.getElementById('unitPriceInput').value = price;
+        $('#soSave').on('click',function(){
+          if(!$('#soCustomerId').val()){alert('Select customer');return;}
+          if(!soItems.length){alert('Add at least one item');return;}
+          rebuildHidden();
+          $.ajax({
+            url:'/SalesOrder/Create', type:'POST',
+            data: $('#soCreateForm').serialize(),
+           
+            success: ()=>{ alert('Saved'); location.href='/SalesOrder/Index'; },
+            error: x=> alert('Error: '+(x.responseText||x.statusText))
+          });
         });
     </script>
 }

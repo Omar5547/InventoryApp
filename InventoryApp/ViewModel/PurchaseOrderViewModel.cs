@@ -10,15 +10,16 @@ namespace InventoryApp.ViewModel
         public string? VendorName { get; set; }
         public List<SelectListItem> VendorList { get; set; } = new List<SelectListItem>();
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-        public decimal Discount { get; set; }
+        
         public string Currency { get; set; } = "USD";
         public OrderStatus Status { get; set; }
-        public decimal NonVendorCosts { get; set; }
+        
 
         public List<PurchaseOrderItemViewModel> Items { get; set; } = new List<PurchaseOrderItemViewModel>();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public bool IsActive { get; set; } = true;
-
+        public decimal Total { get; set; }
+        public List<ProductViewModel> ProductList { get; set; } = new();
     }
 }

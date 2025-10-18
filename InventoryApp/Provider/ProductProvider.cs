@@ -1,5 +1,6 @@
 ﻿using Application.DTO;
 using Application.Interfaces;
+using InventoryApp.Helper;
 using InventoryApp.ViewModel;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -15,16 +16,20 @@ namespace InventoryApp.Provider
             _productService = productService;
             _categoryService = categoryService;
         }
-        public async Task<List<ProductViewModel>> GetAllAsync(string? search=null,int? skip=null,int? take =null) 
+        public async Task<List<ProductViewModel>> GetAllAsync(string? search=null) 
         {
-            var dtos = await _productService.GetAllAsync(search,skip,take);
+            var dtos = await _productService.GetAllAsync(search);
             return dtos.Select(p => new ProductViewModel 
             {
                 Id = p.Id,
                 Name = p.Name,
-                SKU = p.SKU,
+                Code = p.Code,
                 SalePrice = p.SalePrice,
                 Unit = p.Unit,
+                Quantity = p.Quantity,
+                ImageUrl = p.ImageUrl,
+                Description = p.Description,
+                CategoryId = p.CategoryId,
                 CategoryName = p.CategoryName,
                 IsActive = p.IsActive,
             }).ToList();
@@ -38,10 +43,11 @@ namespace InventoryApp.Provider
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                SKU = dto.SKU,
-                PurchasePrice = dto.PurchasePrice,
+                Code = dto.Code,
                 SalePrice = dto.SalePrice,
                 Unit = dto.Unit,
+                Quantity = dto.Quantity,
+                Description = dto.Description,
                 ImageUrl = dto.ImageUrl,
                 CategoryId = dto.CategoryId,
                 CategoryName = dto.CategoryName,
@@ -62,28 +68,20 @@ namespace InventoryApp.Provider
         {
             if (model.ImageFile !=null) 
             { 
-                string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
-                string folderPath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot/images");
-                if(!Directory.Exists(folderPath)) 
-                {
-                    Directory.CreateDirectory(folderPath); // تأكد من وجود مجلد الصور
-                }
-                string filePath = Path.Combine(folderPath, uniqueFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create)) 
-                {
-                    await model.ImageFile.CopyToAsync(stream);
-                }
-                model.ImageUrl = "/images/" + uniqueFileName;
+                string fileName = FilelHelper.UploadFile(model.ImageFile,"images");
+                model.ImageUrl = "/Files/images/" + fileName;
             }
             var dto = new ProductDto
             {
-                SKU = model.SKU,
                 Name = model.Name,
-                PurchasePrice = model.PurchasePrice,
+                Code = model.Code,
                 SalePrice = model.SalePrice,
                 Unit = model.Unit,
                 ImageUrl = model.ImageUrl,
+                Quantity =model.Quantity,
+                Description = model.Description,
                 CategoryId = model.CategoryId,
+
                 IsActive = model.IsActive
             };
           return  await _productService.AddAsync(dto);
@@ -94,35 +92,24 @@ namespace InventoryApp.Provider
             {
                 if (!string.IsNullOrEmpty(model.ImageUrl)) 
                 {
-                    string oldPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", model.ImageUrl.TrimStart('/'));
-                    if (File.Exists(oldPath)) 
-                    {
-                        File.Delete(oldPath);
-                    }
+                    string oldFileName = model.ImageUrl.TrimStart('/').Replace("images/","") ;
+                    FilelHelper.DeleteFile(oldFileName, "images");
                 }
-                string UniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
-                string folderPath = Path.Combine(Directory.GetCurrentDirectory(),"wwwroot/images" );
-                if (!Directory.Exists(folderPath)) 
-                {
-                    Directory.CreateDirectory(folderPath);
-                }
-                string filePath = Path.Combine(folderPath,UniqueFileName);
-                using (var stream = new FileStream(filePath, FileMode.Create)) 
-                {
-                    await model.ImageFile.CopyToAsync(stream);
-                }
-                model.ImageUrl = "/images/" + UniqueFileName;
+                string fileName = FilelHelper.UploadFile(model.ImageFile, "images");
+                model.ImageUrl = "/Files/images/" + fileName;
             }
             var dto = new ProductDto
             {
                 Id = model.Id,
                 Name = model.Name,
-                SKU = model.SKU,
-                PurchasePrice = model.PurchasePrice,
+                Code = model.Code,
                 SalePrice = model.SalePrice,
                 Unit = model.Unit,
                 ImageUrl = model.ImageUrl,
+                Quantity = model.Quantity,
+                Description = model.Description,
                 CategoryId = model.CategoryId,
+                IsActive = model.IsActive
 
             };
             await _productService.UpdateAsync(dto);
@@ -132,11 +119,8 @@ namespace InventoryApp.Provider
             var vm = await GetByIdAsync(id);
             if (!string.IsNullOrEmpty(vm.ImageUrl)) 
             {
-                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", vm.ImageUrl.TrimStart('/'));
-                if (File.Exists(path)) 
-                {
-                    File.Delete(path);
-                }
+                string fileName =  vm.ImageUrl.TrimStart('/').Replace("images/","");
+              FilelHelper.DeleteFile(fileName, "images");    
             }
             await _productService.DeleteAsync(id);
         }

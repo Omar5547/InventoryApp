@@ -1,0 +1,31 @@
+﻿@model ProductListViewModel
+@{
+    ViewData["Title"] = Model.CategoryName;
+}
+
+<h2 class="mb-4">@Model.CategoryName</h2>
+
+@if (Model.Products?.Any() != true)
+{
+    <p>لا توجد منتجات في هذا القسم حالياً.</p>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var p in Model.Products)
+        {
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card h-100">
+                    <img src="@p.ImageUrl" alt="@p.Name" class="card-img-top"
+                         style="height:200px;object-fit:contain;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title" style="min-height:48px">@p.Name</h5>
+                        <p class="card-text">@p.SalePrice.ToString("C")</p>
+                        <a asp-controller="Home" asp-action="Details" asp-route-id="@p.Id"
+                           class="btn btn-primary">تفاصيل</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -8,6 +8,7 @@
         public decimal Qty { get; set; }
         public decimal UnitPrice { get; set; }
         public decimal Discount { get; set; }
-        public decimal Total => Qty * UnitPrice * (1 - Discount / 100);
+        public decimal Tax { get; set; }
+        public decimal Total { get; set; }
     }
 }

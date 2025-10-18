@@ -9,15 +9,10 @@ namespace Application.Interfaces
 {
     public interface IPurchaseOrderService
     {
-        Task<IReadOnlyList<PurchaseOrderListItemDto>> GetAllAsync(string? search = null);
+        Task<IEnumerable<PurchaseOrderListItemDto>> GetAllAsync(string? search = null);
         Task<PurchaseOrderDto?> GetByIdAsync(int id);
         Task <int> AddAsync(PurchaseOrderDto orderDto , IEnumerable<PurchOrderItemDto> items);
-
-        Task UpdateAsync(PurchaseOrderDto orderDto);
-        Task AddOrUpdateItemAsync(PurchOrderItemDto item);
-        Task RemoveItemAsync(int purchOrderId , int productId);
-        Task PostAsync(int orderId , int locationId);
-        Task CancelAsync(int orderId);
+        Task UpdateAsync(PurchaseOrderDto orderDto, IEnumerable<PurchOrderItemDto> items);
         Task DeleteAsync(int id);
     }
 }

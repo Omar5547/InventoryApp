@@ -6,6 +6,12 @@
 <p>
     <a asp-action="Create" class="btn btn-primary">+ Add Category</a>
 </p>
+<form method="get" class="mb-3">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Search by Category name" value="@Context.Request.Query["search"]" />
+        <button type="submit" class="btn btn-outline-secondary">Search</button>
+    </div>
+</form>
 <table class="table table-striped">
     <thead>
         <tr>

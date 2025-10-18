@@ -34,21 +34,13 @@ namespace InventoryApp.Controllers
             var latestProducts = products.OrderByDescending(p => p.Id).Take(9);
 
             var customers = await _customerProvider.GetAllAsync();
-            var reviews = customers.Select(c => new ReviewViewModel
-            {
-                // عدّل الأسماء حسب خصائص CustomerViewModel عندك
-                Id = c.Id,
-                Name = c.Name,
-                Email = c.Email,
-                Subject = "عميل لدينا",              // قيمة افتراضية
-            });
+           
 
             var vm = new HomeIndexViewModel
             {
                 Categories = categories,
                 Products = products,
                 LatestProducts = latestProducts,
-                Reviews = reviews
             };
 
             return View(vm);
@@ -73,5 +65,24 @@ namespace InventoryApp.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        public async Task<IActionResult> Products(int id)
+        {
+            var category = (await _categoryProvider.GetAllAsync())
+                            .FirstOrDefault(c => c.Id == id);
+            if (category == null) return NotFound();
+
+            var allProducts = await _productProvider.GetAllAsync();
+            var productsInCategory = allProducts.Where(p => p.CategoryId == id).ToList();
+
+            var vm = new ProductListViewModel
+            {
+                CategoryId = id,
+                CategoryName = category.Name,
+                Products = productsInCategory
+            };
+
+            return View(vm);
+        }
+
     }
 }

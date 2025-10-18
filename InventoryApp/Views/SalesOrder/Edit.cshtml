@@ -1,54 +1,162 @@
 ﻿@model InventoryApp.ViewModel.SalesOrderViewModel
-@{
-    ViewData["Title"] = "Edit Sales Order";
-}
-<div class="container mt-4">
+@using System.Text.Json
+
+<div class="container">
     <h2>Edit Sales Order</h2>
 
+    <form id="soEditForm" method="post" onsubmit="return false;">
+       
+        <input type="hidden" name="Id" value="@Model.Id" />
 
+        
+        <div class="form-group">
+            <label>Customer</label>
+            <select name="CustomerId" id="soCustomerId" class="form-control" required>
+                <option value="">Select Customer</option>
+                @foreach (var c in Model.CustomerList)
+                {
+                    <option value="@c.Value" selected="@(c.Value == Model.CustomerId.ToString())">@c.Text</option>
+                }
+            </select>
+        </div>
 
-    <form asp-action="Edit" method="post">
-        <input type="hidden" asp-for="Id" />
-        <div class="card">
-            <div class="card-body">
+        <div class="form-group">
+            <label>Order Date</label>
+            <input type="date" name="OrderDate" id="soOrderDate" class="form-control"
+                   value="@Model.OrderDate.ToString("yyyy-MM-dd")" required />
+        </div>
 
+        <div class="form-group">
+            <label>Currency</label>
+            <input type="text" name="Currency" id="soCurrency" class="form-control" value="@Model.Currency" />
+        </div>
 
-                <div class="form-group mb-3">
-                    <label asp-for="CustomerId" class="form-label">Customer</label>
-                    <select asp-for="CustomerId" class="form-select" asp-items="Model.CustomerList">
-                        <option value="">--- Select Customer ---</option>
-                    </select>
-                    <span asp-validation-for="CustomerId" class="text-danger"></span>
-                </div>
-                <div class="form-group mb-3">
-                    <label asp-for="OrderDate" class="form-label"> Order Date</label>
-                    <input asp-for="OrderDate" class="form-control" type="date" />
-                    <span asp-validation-for="OrderDate" class="text-danger"></span>
-                </div>
-                <div class="form-group mb-3">
-                    <label asp-for="Discount" class="form-label"> Discount</label>
-                    <input asp-for="Discount" class="form-control" type="number" step="0.01" />
-                    <span asp-validation-for="Discount" class="text-danger"></span>
-                </div>
-                
-                <div class="form-group mb-3">
-                    <label asp-for="Currency" class="form-label"> Currency </label>
-                    <input asp-for="Currency" class="form-control" />
-                    <span asp-validation-for="Currency" class="text-danger"></span>
-                </div>
-
-                <div class="d-flex gap-2">
-
-                    <button type="submit" class="btn btn-success"> Save</button>
-                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-                </div>
+        <h5 class="mt-4">Add Product</h5>
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <label>Select Product</label>
+                <select id="soProd" class="form-control">
+                    <option value="">Select</option>
+                    @foreach (var p in Model.ProductList)
+                    {
+                        <option value="@p.Id" data-name="@p.Name" data-price="@p.SalePrice">@p.Name - @p.SalePrice</option>
+                    }
+                </select>
             </div>
+            <div class="col-md-2">
+              <label>Qty</label>
+              <input id="soQty" type="number" class="form-control" value="1" min="1">
+          </div>
+            <div class="col-md-2">
+                <label>Unit Price</label>
+                <input id="soPrice" type="number" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="col-md-2">
+                <label>Discount %</label>
+                <input id="soDisc" type="number" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="col-md-2">
+                <label>Tax %</label>
+                <input id="soTax" type="number" class="form-control" value="0" step="0.01">
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+            <button type="button" id="soAdd" class="btn btn-primary w-100">Add</button>
+            </div>
+        </div>
+
+        <h5 class="mt-4">Order Items</h5>
+        <table class="table table-bordered" id="soTable">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Unit</th>
+                    <th>Disc%</th>
+                    <th>Tax%</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+
+        <div id="soHidden"></div>
+
+        <div class="mt-3">
+            <button type="button" id="soSave" class="btn btn-success">Update Order</button>
+            <a class="btn btn-secondary" href="@Url.Action("Index", "SalesOrder")">Cancel</a>
         </div>
     </form>
 </div>
-@section Scripts {
-    
-        <partial name="_ValidationScriptsPartial" />
 
-    
+@section Scripts {
+    <script>
+        const raw = @Html.Raw(JsonSerializer.Serialize(Model.OrderItems ?? new List<InventoryApp.ViewModel.SalesOrderItemViewModel>()));
+        let soItems = (raw||[]).map(x=>({
+          productId:Number(x.productId ?? x.ProductId ?? 0),
+          productName:String(x.productName ?? x.ProductName ?? ''),
+          qty:Number(x.qty ?? x.Qty ?? 0),
+          unitPrice:Number(x.unitPrice ?? x.UnitPrice ?? 0),
+          discount:Number(x.discount ?? x.Discount ?? 0),
+          tax:Number(x.tax ?? x.Tax ?? 0)
+        }));
+
+        const calc = o => o.qty*o.unitPrice*(1-o.discount/100)*(1+o.tax/100);
+
+        function render(){ const tb=$('#soTable tbody'); tb.empty();
+          soItems.forEach((x,i)=>tb.append(
+            `<tr>
+              <td>${x.productName}</td>
+              <td>${x.qty.toFixed(3)}</td>
+              <td>${x.unitPrice.toFixed(2)}</td>
+              <td>${x.discount.toFixed(2)}%</td>
+              <td>${x.tax.toFixed(2)}%</td>
+              <td>${calc(x).toFixed(2)}</td>
+              <td><button type="button" class="btn btn-danger btn-sm" onclick="delItem(${i})">Remove</button></td>
+            </tr>`
+          ));
+          rebuildHidden();
+        }
+        function rebuildHidden(){
+          const h=$('#soHidden'); h.empty();
+          soItems.forEach((x,i)=>{
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].ProductId`,value:x.productId}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].ProductName`,value:x.productName}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Qty`,value:x.qty}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].UnitPrice`,value:x.unitPrice}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Discount`,value:x.discount}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Tax`,value:x.tax}).appendTo(h);
+            $('<input>',{type:'hidden',name:`OrderItems[${i}].Total`,value:calc(x).toFixed(2)}).appendTo(h);
+          });
+        }
+        $(function(){ render(); });
+
+        $('#soProd').on('change',function(){ const price=Number(this.options[this.selectedIndex]?.getAttribute('data-price')||0); $('#soPrice').val(price); });
+        $('#soAdd').on('click',function(){
+          const o=document.getElementById('soProd'); const id=Number($('#soProd').val());
+          const name=o.options[o.selectedIndex]?.getAttribute('data-name')||'';
+          const qty=Number($('#soQty').val()||0), unit=Number($('#soPrice').val()||0);
+          const disc=Number($('#soDisc').val()||0), tax=Number($('#soTax').val()||0);
+          if(!id||qty<=0){alert('Select product & valid qty');return;}
+          soItems.push({productId:id,productName:name,qty,unitPrice:unit,discount:disc,tax});
+          render();
+          $('#soProd').val('');$('#soQty').val(1);$('#soPrice').val(0);$('#soDisc').val(0);$('#soTax').val(0);
+        });
+        window.delItem=i=>{soItems.splice(i,1);render();};
+
+        $('#soSave').on('click',function(){
+          if(!$('#soCustomerId').val()){alert('Select customer');return;}
+          if(!soItems.length){alert('Add at least one item');return;}
+          rebuildHidden();
+          $.ajax({
+            url:'/SalesOrder/Edit', type:'POST',
+            data: $('#soEditForm').serialize(),
+            
+            success: ()=>{ alert('Updated'); location.href='/SalesOrder/Index'; },
+            error: x=> alert('Error: '+(x.responseText||x.statusText))
+          });
+        });
+    </script>
 }

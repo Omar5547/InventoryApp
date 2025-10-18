@@ -1,4 +1,4 @@
-﻿@model InventoryApp.ViewModel.ProductViewModel
+﻿@* @model InventoryApp.ViewModel.ProductViewModel
 
 @{
     var returnUrl = Context.Request.Path + Context.Request.QueryString;
@@ -6,8 +6,10 @@
 
 <div class="col-lg-4 col-md-6 portfolio-item isotope-item _@Model.CategoryName">
     <div class="portfolio-content h-100">
-        <a href="@Model.ImageUrl" data-gallery="portfolio-gallery-app" class="glightbox">
-            <img src="https://localhost:54538/upload/@Model.ImageUrl" class="img-fluid" alt="@Model.Name">
+        <!-- عرض الصورة في نافذة منبثقة (glightbox) -->
+        <a href="@Url.Content("~/files/images/" + @Model.ImageFile)" data-gallery="portfolio-gallery-app" class="glightbox">
+            <!-- عرض الصورة -->
+            <img src="@Url.Content("~/files/images/" + @Model.ImageFile)" class="img-fluid" alt="@Model.Name">
         </a>
 
         <div class="portfolio-info">
@@ -16,7 +18,7 @@
         </div>
 
         <center>
-            <!-- ✔️ اللينك الصحيح -->
+            <!-- زر إضافة إلى السلة -->
             <a asp-controller="Order"
                asp-action="AddToCart"
                asp-route-productId="@Model.Id"
@@ -27,9 +29,15 @@
                 <i class="bi bi-plus"></i>
             </a>
 
+            <!-- زر تعديل المنتج -->
             <a asp-controller="Product" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+
+            <!-- زر عرض تفاصيل المنتج -->
             <a asp-controller="Product" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Details</a>
+
+            <!-- زر حذف المنتج -->
             <a asp-controller="Product" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
         </center>
     </div>
 </div>
+ *@

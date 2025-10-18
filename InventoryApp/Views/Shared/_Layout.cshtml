@@ -28,7 +28,11 @@
     <!-- Main CSS File -->
     <link href="~/assets/css/main.css" rel="stylesheet">
     <link href="~/assets/css/MyStyle.css" rel="stylesheet">
-
+    <style>
+        #hero{
+            min-height : 70vh !important;
+        }
+    </style>
     <!-- =======================================================
     * Template Name: Techie
     * Template URL: https://bootstrapmade.com/techie-free-skin-bootstrap-3/
@@ -60,7 +64,7 @@
                     <li><a asp-controller="Vendor" asp-action="Index"> الموردين</a></li>
                     <li><a asp-controller="Customer" asp-action="Index"> العملاء</a></li>
                     <li><a asp-controller="SalesOrder" asp-action="Index">المبيعات</a></li>
-                    <li><a asp-controller="Order" asp-action="Index">المشتريات</a></li>
+                    <li><a asp-controller="PurchaseOrder" asp-action="Index">المشتريات</a></li>
                   
 
                     
@@ -69,11 +73,11 @@
 
 
 
+                    
+                   <!---- <li><a href="/Home/index" class="active">الرئيسية</a></li> ---->
 
-                    <li><a href="/Home/index" class="active">الرئيسية</a></li>
-
-
-                    @*    <li><a href="#portfolio">Portfolio</a></li>
+                    <!--
+                     <li><a href="#portfolio">Portfolio</a></li>
                     <li><a href="#team">Team</a></li>
                     <li class="dropdown">
                         <a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
@@ -94,12 +98,15 @@
                             <li><a href="#">Dropdown 4</a></li>
                         </ul>
                     </li>
-                    <li><a href="#contact">Contact</a></li> *@
+                    --->
+                    <!-- <li><a href="#contact">Contact</a></li> -->
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
-            @*  <a class="btn-getstarted" href="#about">Get Started</a> *@
+            <!---  <a class="btn-getstarted" href="#about">Get Started</a> --->
+                     
+              
 
         </div>
     </header>

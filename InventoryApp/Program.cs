@@ -21,19 +21,13 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
-builder.Services.AddScoped<IPurchaseOrderService, OrderService>();
+builder.Services.AddScoped<IPurchaseOrderService, PurchOrderService>();
 builder.Services.AddScoped<ISalesOrderService, SalesOrderService>();
-builder.Services.AddScoped<IStockService, StockService>();
-builder.Services.AddScoped<ILocationService, LocationService>();
-builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ProductProvider>();
 builder.Services.AddScoped<PurchaseOrderProvider>();
 builder.Services.AddScoped<VendorProvider>();
 builder.Services.AddScoped<CustomerProvider>();
 builder.Services.AddScoped<CategoryProvider>();
-builder.Services.AddScoped<ReportProvider>();
-builder.Services.AddScoped<StockProvider>();
-builder.Services.AddScoped<LocationProvider>();
 builder.Services.AddScoped<SalesOrderProvider>();
 builder.Services.AddHttpContextAccessor();
 
@@ -55,7 +49,7 @@ Options.AccessDeniedPath = "/Account/AccessDenied";
 );
 
 var app = builder.Build();
-await InventoryApp.Seed.IdeentitySeed.SeedAsync(app.Services);
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -74,6 +68,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Product}/{action=Index}/{id?}");
 
 app.Run();

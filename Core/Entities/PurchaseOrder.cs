@@ -11,9 +11,10 @@ namespace Core.Entities
         public int VendorId { get; set; }
         public Vendor? Vendor { get; set; }
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-        public decimal Discount { get; set; }
-        public decimal NonVendorCosts { get; set; }
-        public string Currency { get; set; } = "USD";
+       
+        
+        
+        public string? Currency { get; set; } = "USD";
         public OrderStatus Status { get; set; } = OrderStatus.Open;
         public ICollection<PurchOrderItem> Items { get; set; } = new List<PurchOrderItem>();
     }

@@ -5,7 +5,9 @@ using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,27 +36,8 @@ namespace Application.Services
     
        
 
-        public async Task<IReadOnlyList<CustomerDto>> GetAllAsync(string? search = null)
-        {
-            var customers = _customerRepo.Query().AsNoTracking();
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                customers = customers.Where(c => c.Name.Contains(search) || (c.PhoneNumber??"").Contains(search));
-            }
-            return await customers.OrderBy(c=> c.Name)
-                .Select(customers => new CustomerDto
-                {
-                    Id = customers.Id,
-                    Name = customers.Name,
-                    Email = customers.Email,
-                    Phone = customers.PhoneNumber,
-                    Address = customers.Address,
-                    IsActive = customers.IsActive,
-                    CreatedAt = customers.CreatedAt,
-                    UpdatedAt = customers.UpdatedAt
-                })
-                .ToListAsync();
-        }
+       
+        
 
         public async Task<CustomerDto?> GetByIdAsync(int id)
         {
@@ -67,6 +50,11 @@ namespace Application.Services
                 Email = customer.Email,
                 Phone = customer.PhoneNumber,
                 Address = customer.Address,
+                City = customer.City,
+
+                Country = customer.Country,
+                Fax = customer.Fax,
+                Discount = customer.Discount,
                 IsActive = customer.IsActive,
                 CreatedAt = customer.CreatedAt,
                 UpdatedAt = customer.UpdatedAt
@@ -85,6 +73,10 @@ namespace Application.Services
             customer.Email = customerDto.Email;
             customer.Address = customerDto.Address;
             customer.PhoneNumber = customerDto.Phone;
+            customer.City = customerDto.City;
+            customer.Country = customerDto.Country;
+            customer.Fax = customerDto.Fax;
+            customer.Discount = customerDto.Discount;
             customer.IsActive = customerDto.IsActive;
             customer.UpdatedAt = DateTime.UtcNow;
             _customerRepo.Update(customer);
@@ -99,7 +91,11 @@ namespace Application.Services
                 Email = customerDto.Email,
                 PhoneNumber = customerDto.Phone,
                 Address = customerDto.Address,
-                IsActive = customerDto.IsActive,
+                City = customerDto.City,
+                Country = customerDto.Country,
+                Fax = customerDto.Fax,
+                Discount = customerDto.Discount,
+                 IsActive = customerDto.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
              };
@@ -107,6 +103,31 @@ namespace Application.Services
             await _customerRepo.SaveAsync();
             return Customer.Id;
         }
-            
+
+        public async Task<IEnumerable<CustomerDto>> GetAllAsync(string? search)
+        {
+            var customers = _customerRepo.Query().AsNoTracking();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                customers = customers.Where(v => v.Name.Contains(search) || (v.PhoneNumber ?? "").Contains(search));
+            }
+            return await customers.OrderBy(c => c.Name)
+                .Select(customers => new CustomerDto
+                {
+                    Id = customers.Id,
+                    Name = customers.Name,
+                    Email = customers.Email,
+                    Phone = customers.PhoneNumber,
+                    Address = customers.Address,
+                    City = customers.City,
+                    Country = customers.Country,
+                    Fax = customers.Fax,
+                    Discount = customers.Discount,
+                    IsActive = customers.IsActive,
+                    CreatedAt = customers.CreatedAt,
+                    UpdatedAt = customers.UpdatedAt
+                })
+                .ToListAsync();
+        }
     }
 }

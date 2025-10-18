@@ -12,9 +12,10 @@ namespace Application.DTO
         public int VendorId { get; set; }
         public string VendorName { get; set; } = string.Empty;
         public DateTime OrderDate { get; set; } = DateTime.UtcNow;
-        public decimal Discount { get; set; }
-        public decimal NonVendorCosts { get; set; }
+       
+        
         public string Currency { get; set; } = "USD";
         public OrderStatus Status { get; set; } = OrderStatus.Open;
+        public List<PurchOrderItemDto> Items { get; set; } = new List<PurchOrderItemDto>();
     }
 }

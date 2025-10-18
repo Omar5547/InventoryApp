@@ -11,7 +11,7 @@ namespace Application.DTO
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string SKU { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
         public string? CategoryName {  get; set; }
         public decimal SalePrice { get; set; }
         public UnitType Unit { get; set; }
